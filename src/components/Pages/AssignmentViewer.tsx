@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Download, FileText, Calendar, Clock, BookOpen } from 'lucide-react';
 import { Assignment } from '../../types';
-import { API_BASE_URL } from '../../config/api';
 
 interface AssignmentViewerProps {
   assignment: Assignment | null;
@@ -57,31 +56,6 @@ export const AssignmentViewer: React.FC<AssignmentViewerProps> = ({ assignment, 
       }
       return <p key={index} className="mb-2 text-gray-700">{line}</p>;
     });
-  };
-
-  const handleDownload = (downloadLink: string, filename: string) => {
-    // Create full URL for download
-    const fullUrl = downloadLink.startsWith('http') 
-      ? downloadLink 
-      : `${API_BASE_URL}/files${downloadLink}`;
-    
-    // Create a temporary link element and trigger download
-    const link = document.createElement('a');
-    link.href = fullUrl;
-    link.download = filename;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleViewAIResponse = (aiResponseFile: string) => {
-    // Open AI response file in new tab
-    const fullUrl = aiResponseFile.startsWith('http') 
-      ? aiResponseFile 
-      : `${API_BASE_URL}/files${aiResponseFile}`;
-    
-    window.open(fullUrl, '_blank');
   };
 
   return (
@@ -164,20 +138,14 @@ export const AssignmentViewer: React.FC<AssignmentViewerProps> = ({ assignment, 
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
             <div className="space-y-3">
               {assignment.downloadLink && (
-                <button 
-                  onClick={() => handleDownload(assignment.downloadLink!, `${assignment.title}.pdf`)}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors duration-200"
-                >
+                <button className="w-full flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors duration-200">
                   <Download className="w-5 h-5" />
                   Download PDF
                 </button>
               )}
               
               {assignment.aiResponseFile && (
-                <button 
-                  onClick={() => handleViewAIResponse(assignment.aiResponseFile!)}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-green-50 text-green-600 rounded-xl hover:bg-green-100 transition-colors duration-200"
-                >
+                <button className="w-full flex items-center gap-3 px-4 py-3 bg-green-50 text-green-600 rounded-xl hover:bg-green-100 transition-colors duration-200">
                   <FileText className="w-5 h-5" />
                   View AI Response
                 </button>

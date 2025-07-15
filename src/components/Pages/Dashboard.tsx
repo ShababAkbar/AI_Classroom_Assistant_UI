@@ -2,67 +2,17 @@ import React, { useState } from 'react';
 import { Calendar, Filter, Search } from 'lucide-react';
 import { Assignment } from '../../types';
 import { AssignmentCard } from '../Common/AssignmentCard';
-import { useApi } from '../../hooks/useApi';
-import { assignmentService } from '../../services/assignmentService';
-import { courseService } from '../../services/courseService';
+import { mockAssignments, mockCourses } from '../../data/mockData';
 
 interface DashboardProps {
   onViewAssignment: (assignment: Assignment) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onViewAssignment }) => {
+  const [assignments, setAssignments] = useState<Assignment[]>(mockAssignments);
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch assignments from backend
-  const { 
-    data: assignments, 
-    loading: assignmentsLoading, 
-    error: assignmentsError,
-    refetch: refetchAssignments 
-  } = useApi(() => assignmentService.getAssignments());
-
-  // Fetch courses from backend
-  const { 
-    data: courses, 
-    loading: coursesLoading, 
-    error: coursesError 
-  } = useApi(() => courseService.getCourses());
-
-  // Loading state
-  if (assignmentsLoading || coursesLoading) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (assignmentsError || coursesError) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-          <h3 className="text-red-800 font-medium mb-2">Error Loading Data</h3>
-          <p className="text-red-600 text-sm mb-4">
-            {assignmentsError || coursesError}
-          </p>
-          <button
-            onClick={() => {
-              refetchAssignments();
-            }}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const filteredAssignments = (assignments || []).filter(assignment => {
   const filteredAssignments = assignments.filter(assignment => {
     const matchesCourse = selectedCourse === 'all' || assignment.course === selectedCourse;
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,8 +29,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewAssignment }) => {
     return daysUntilDue <= 1;
   }).length;
 
-  const completedCount = (assignments || []).filter(a => a.status === 'completed').length;
-  const totalCount = (assignments || []).length;
+  const completedCount = assignments.filter(a => a.status === 'completed').length;
+  const totalCount = assignments.length;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -151,7 +101,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewAssignment }) => {
               className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Courses</option>
-              {(courses || []).map(course => (
+              {mockCourses.map(course => (
                 <option key={course.id} value={course.name}>{course.name}</option>
               ))}
             </select>
