@@ -1,14 +1,51 @@
 import React, { useState } from 'react';
 import { Bell, Mail, MessageCircle, Filter, Search, Calendar } from 'lucide-react';
 import { Notification } from '../../types';
-import { mockNotifications } from '../../data/mockData';
+import { useApi } from '../../hooks/useApi';
+import { notificationService } from '../../services/notificationService';
 
 export const NotificationsLog: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const [filterChannel, setFilterChannel] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredNotifications = notifications.filter(notification => {
+  // Fetch notifications from backend
+  const { 
+    data: notifications, 
+    loading, 
+    error,
+    refetch 
+  } = useApi(() => notificationService.getNotifications());
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+          <h3 className="text-red-800 font-medium mb-2">Error Loading Notifications</h3>
+          <p className="text-red-600 text-sm mb-4">{error}</p>
+          <button
+            onClick={refetch}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredNotifications = (notifications || []).filter(notification => {
     const matchesChannel = filterChannel === 'all' || notification.channel === filterChannel;
     const matchesSearch = notification.assignment.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          notification.course.toLowerCase().includes(searchTerm.toLowerCase());
@@ -57,10 +94,10 @@ export const NotificationsLog: React.FC = () => {
   };
 
   const channelStats = {
-    total: notifications.length,
-    email: notifications.filter(n => n.channel === 'email' || n.channel === 'both').length,
-    whatsapp: notifications.filter(n => n.channel === 'whatsapp' || n.channel === 'both').length,
-    both: notifications.filter(n => n.channel === 'both').length
+    total: (notifications || []).length,
+    email: (notifications || []).filter(n => n.channel === 'email' || n.channel === 'both').length,
+    whatsapp: (notifications || []).filter(n => n.channel === 'whatsapp' || n.channel === 'both').length,
+    both: (notifications || []).filter(n => n.channel === 'both').length
   };
 
   return (
